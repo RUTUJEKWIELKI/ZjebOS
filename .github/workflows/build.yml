@@ -2,8 +2,12 @@ name: ZjebOS Desktop ISO
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 concurrency:
   group: ${{ github.ref }}
@@ -34,6 +38,7 @@ jobs:
         id: keyring
         run: |
           pacman-key --init
+          pacman-key --populate archlinux
           pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
           pacman-key --lsign-key F3B607488DB35A47
 
@@ -42,7 +47,7 @@ jobs:
       - name: Install dependencies
         id: dependencies
         run: |
-          sudo pacman -Syu --noconfirm archiso cachyos-keyring mkinitcpio-archiso squashfs-tools grub
+          sudo pacman -Syu --noconfirm archiso archlinux-keyring cachyos-keyring mkinitcpio-archiso squashfs-tools grub git sudo
 
       - name: Create build user
         id: user-archiso
@@ -136,3 +141,26 @@ jobs:
         with:
           name: zjebos-desktop-linux-results-${{needs.build.outputs.builddate}}-${{ matrix.bootloader }}-${{ matrix.filesystem }}
           path: results/*
+
+  release:
+    name: Publish ZjebOS ISO release
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download built ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: zjebos-desktop-linux-${{ needs.build.outputs.builddate }}
+          path: release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zjebos-${{ needs.build.outputs.builddate }}-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: ZjebOS Linux ${{ needs.build.outputs.builddate }} (build ${{ github.run_number }})
+          generate_release_notes: true
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: release-assets/*
