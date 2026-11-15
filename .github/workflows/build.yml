@@ -60,6 +60,9 @@ jobs:
         id: build
         run: |
           sudo -H -E -u builder ./buildiso.sh
+          test -n "$(find out/desktop -maxdepth 1 -type f -name '*.iso' -print -quit)"
+          cd out/desktop
+          sha256sum ./*.iso > SHA256SUMS
 
       - name: Upload ISO to artifacts
         id: upload
