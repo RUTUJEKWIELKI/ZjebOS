@@ -31,7 +31,7 @@ Build the desktop ISO:
 sudo ./buildiso.sh -p desktop -v -w
 ```
 
-The resulting ISO is written to the `out/desktop` directory.
+The resulting ISO is written to the `out/desktop` directory. On every successful push to `master` (and on manual workflow dispatch), GitHub Actions also publishes the ISO and its SHA-256 checksum as a GitHub Release.
 
 ## Build options
 
