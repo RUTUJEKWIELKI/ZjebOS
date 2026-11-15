@@ -1,4 +1,4 @@
-name: Desktop ISO
+name: ZjebOS Desktop ISO
 on:
   push:
     branches:
@@ -24,13 +24,13 @@ jobs:
         run: |
           echo "builddate=$(date +'%y%m%d')" >> $GITHUB_OUTPUT
 
-      - name: Clone CachyOS-Live-ISO
+      - name: Checkout ZjebOS sources
         id: clone
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Add CachyOS keyring
+      - name: Configure CachyOS base repository
         id: keyring
         run: |
           pacman-key --init
@@ -60,7 +60,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: cachyos-desktop-linux-${{ steps.date.outputs.builddate }}
+          name: zjebos-desktop-linux-${{ steps.date.outputs.builddate }}
           path: out/desktop/*
   quicktest:
     name: Testing (${{ matrix.bootloader }} / ${{ matrix.filesystem }})
@@ -76,7 +76,7 @@ jobs:
         bootloader: [grub, systemd-boot, refind, limine]
         filesystem: [btrfs, xfs, ext4, f2fs, zfs]
     steps:
-      - name: Clone CachyOS-Live-ISO
+      - name: Checkout ZjebOS sources
         id: clone
         uses: actions/checkout@v6
 
@@ -134,5 +134,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cachyos-desktop-linux-results-${{needs.build.outputs.builddate}}-${{ matrix.bootloader }}-${{ matrix.filesystem }}
+          name: zjebos-desktop-linux-results-${{needs.build.outputs.builddate}}-${{ matrix.bootloader }}-${{ matrix.filesystem }}
           path: results/*

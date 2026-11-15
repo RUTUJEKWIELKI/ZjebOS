@@ -200,3 +200,17 @@ xdg-utils
 xfsprogs
 xl2tpd
 zfs-utils
+
+# ZjebOS default desktop applications
+audacity
+discord
+fastfetch
+gimp
+libreoffice-fresh
+obs-studio
+pavucontrol
+qbittorrent
+spotify-launcher
+steam-jupiter-stable
+telegram-desktop
+vlc
