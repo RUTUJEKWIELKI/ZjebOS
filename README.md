@@ -1,42 +1,46 @@
-These are the basic needed files and folders to build CachyOS system.
+# ZjebOS
 
-### buildiso
+ZjebOS is a customized Arch Linux desktop live ISO. It uses CachyOS repositories, kernels and system packages as its technical base, while the distribution identity and boot experience are branded as ZjebOS.
 
-buildiso is used to build CachyOS ISO.
+## Default applications
 
-#### Arguments
+The desktop image includes Firefox, Discord, Steam, Spotify Launcher, VLC, OBS Studio, LibreOffice, GIMP, Audacity, Telegram, qBittorrent, pavucontrol and fastfetch. Firefox is already part of the base package set; the remaining applications are declared in `archiso/packages_desktop.x86_64`.
 
-~~~
-$ ./buildiso.sh -h
-Usage: buildiso [options]
-    -c                 Disable clean work dir
-    -r                 Disable building in RAM on systems with more than 23GB RAM
-    -w                 Remove build directory (not the ISO) after ISO file is built
-    -h                 This help
-    -p <profile>       Buildset or profile [default: desktop]
-    -v                 Verbose output to log file, show profile detail (-q)
-~~~
+Steam is installed from the CachyOS `steam-jupiter-stable` package, which provides the `steam` command. Discord and Spotify Launcher are available from the configured repositories. Spotify Launcher downloads the Spotify client the first time it is started.
 
-* Uses the same signature that normal repo and has no mirrors package to install.
+## Build
+
+Build on an Arch Linux system. The build profile depends on the CachyOS package repository and keyring, so configure that repository as shown in `.github/workflows/build.yml` before a local build.
+
+Install the build tools:
 
 ```bash
-sudo pacman -Syy
+sudo pacman -S --needed archiso mkinitcpio-archiso git squashfs-tools grub
 ```
 
-### Install necessary packages:
+Clone the project:
+
 ```bash
-sudo pacman -S archiso mkinitcpio-archiso git squashfs-tools grub --needed
+git clone https://github.com/RUTUJEKWIELKI/ZjebOS.git
+cd ZjebOS
 ```
 
-### Clone:
-```bash
-git clone https://github.com/cachyos/cachyos-live-iso.git cachyos-archiso
-cd cachyos-archiso
-```
+Build the desktop ISO:
 
-### Build
 ```bash
 sudo ./buildiso.sh -p desktop -v -w
 ```
 
-As the result iso appears at the `out` folder
+The resulting ISO is written to the `out/desktop` directory. On every successful push to `master` (and on manual workflow dispatch), GitHub Actions also publishes the ISO and its SHA-256 checksum as a GitHub Release.
+
+## Build options
+
+```
+./buildiso.sh -h
+```
+
+- `-c`: keep the existing work directory instead of cleaning it
+- `-r`: enable building in RAM when more than 23 GB of RAM is available
+- `-w`: remove the build directory after the ISO has been created
+- `-p <profile>`: select the build profile (default: `desktop`)
+- `-v`: enable verbose build output

@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: no
+# SPDX-License-Identifier: CC0-1.0
+---
+componentName: zjebos
+
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+
+windowExpanding: normal
+windowSize: 1100px,520px
+windowPlacement: center
+
+sidebar: widget
+navigation: widget
+
+strings:
+    productName: ZjebOS
+    shortProductName: ZjebOS
+    version: rolling
+    shortVersion: rolling
+    versionedName: ZjebOS Linux
+    shortVersionedName: ZjebOS
+    bootloaderEntryName: ZjebOS
+
+style:
+    SidebarBackground: "#292F34"
+    SidebarText: "#FFFFFF"
+    SidebarTextCurrent: "#292F34"
+    SidebarBackgroundCurrent: "#00CED1"

@@ -18,7 +18,7 @@ main() {
     timedatectl set-ntp true
 
     local progname="$(basename "$0")"
-    local log="/home/liveuser/cachy-install.log"
+    local log="/home/liveuser/zjebos-install.log"
     local mode="online"  # TODO: keep this line for now
 
     local SYSTEM=""
@@ -45,6 +45,8 @@ main() {
 EOF
 
     sudo cp "/usr/share/calamares/settings_${mode}.conf" /etc/calamares/settings.conf
+    # Use the ZjebOS branding shipped with this live image.
+    sudo sed -i 's/^branding: cachyos$/branding: zjebos/' /etc/calamares/settings.conf
     exec pkexec-wrapper calamares -D6 >> $log
 }
 

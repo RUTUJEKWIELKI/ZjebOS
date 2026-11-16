@@ -1,9 +1,13 @@
-name: Desktop ISO
+name: ZjebOS Desktop ISO
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 concurrency:
   group: ${{ github.ref }}
@@ -24,16 +28,17 @@ jobs:
         run: |
           echo "builddate=$(date +'%y%m%d')" >> $GITHUB_OUTPUT
 
-      - name: Clone CachyOS-Live-ISO
+      - name: Checkout ZjebOS sources
         id: clone
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Add CachyOS keyring
+      - name: Configure CachyOS base repository
         id: keyring
         run: |
           pacman-key --init
+          pacman-key --populate archlinux
           pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
           pacman-key --lsign-key F3B607488DB35A47
 
@@ -42,7 +47,7 @@ jobs:
       - name: Install dependencies
         id: dependencies
         run: |
-          sudo pacman -Syu --noconfirm archiso cachyos-keyring mkinitcpio-archiso squashfs-tools grub
+          sudo pacman -Syu --noconfirm archiso archlinux-keyring cachyos-keyring mkinitcpio-archiso squashfs-tools grub git sudo
 
       - name: Create build user
         id: user-archiso
@@ -55,12 +60,15 @@ jobs:
         id: build
         run: |
           sudo -H -E -u builder ./buildiso.sh
+          test -n "$(find out/desktop -maxdepth 1 -type f -name '*.iso' -print -quit)"
+          cd out/desktop
+          sha256sum ./*.iso > SHA256SUMS
 
       - name: Upload ISO to artifacts
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: cachyos-desktop-linux-${{ steps.date.outputs.builddate }}
+          name: zjebos-desktop-linux-${{ steps.date.outputs.builddate }}
           path: out/desktop/*
   quicktest:
     name: Testing (${{ matrix.bootloader }} / ${{ matrix.filesystem }})
@@ -76,7 +84,7 @@ jobs:
         bootloader: [grub, systemd-boot, refind, limine]
         filesystem: [btrfs, xfs, ext4, f2fs, zfs]
     steps:
-      - name: Clone CachyOS-Live-ISO
+      - name: Checkout ZjebOS sources
         id: clone
         uses: actions/checkout@v6
 
@@ -134,5 +142,28 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cachyos-desktop-linux-results-${{needs.build.outputs.builddate}}-${{ matrix.bootloader }}-${{ matrix.filesystem }}
+          name: zjebos-desktop-linux-results-${{needs.build.outputs.builddate}}-${{ matrix.bootloader }}-${{ matrix.filesystem }}
           path: results/*
+
+  release:
+    name: Publish ZjebOS ISO release
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download built ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: zjebos-desktop-linux-${{ needs.build.outputs.builddate }}
+          path: release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zjebos-${{ needs.build.outputs.builddate }}-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: ZjebOS Linux ${{ needs.build.outputs.builddate }} (build ${{ github.run_number }})
+          generate_release_notes: true
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: release-assets/*
