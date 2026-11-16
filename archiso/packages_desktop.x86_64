@@ -125,6 +125,7 @@ nss-mdns
 ntfs-3g
 ntp
 nvidia-utils
+lib32-nvidia-utils
 nvme-cli
 occt
 open-iscsi
